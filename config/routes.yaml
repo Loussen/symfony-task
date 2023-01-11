@@ -3,3 +3,13 @@ controllers:
         path: ../src/Controller/
         namespace: App\Controller
     type: attribute
+
+book_list:
+    path: /book
+    methods: GET
+    controller: App\Controller\BookController::list
+
+book_store:
+    path: /book
+    methods: POST
+    controller: App\Controller\BookController::new
