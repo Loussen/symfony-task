@@ -6,15 +6,20 @@ use App\Entity\Book;
 
 class BookStore
 {
-    private Book $book;
+    private array $data;
 
-    public function __construct(Book $book)
+    public function __construct($data,$authorId)
     {
-        $this->book = $book;
+        $this->data = $data;
     }
 
-    public function getBook(): Book
+    public function getData(): array
     {
-        return $this->book;
+        return $this->data;
     }
+
+//    public function getBook(): Book
+//    {
+//        return $this->book;
+//    }
 }

@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Author;
 use App\Entity\Book;
 use App\Message\BookStore;
+use App\Utils\EntityUtils;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -18,6 +19,8 @@ class BookController extends AbstractController
 {
     public function list(ManagerRegistry $doctrine): JsonResponse
     {
+        echo phpinfo(); exit;
+
         $books = $doctrine
             ->getRepository(Book::class)
             ->findAll();
@@ -40,6 +43,9 @@ class BookController extends AbstractController
 
     public function new(ManagerRegistry $doctrine, Request $request, ValidatorInterface $validator, MessageBusInterface $bus): Response
     {
+//        echo phpinfo(); exit;
+//        print_r(get_extension_funcs("amqp")); exit;
+
         $data = json_decode(
             $request->getContent(),
             true
@@ -47,7 +53,7 @@ class BookController extends AbstractController
 
 //        $entityManager = $doctrine->getManager();
 
-        $columnNames = (new \App\Utils\EntityUtils)->get_column_names_by_entity(Book::class,$doctrine);
+        $columnNames = (new EntityUtils)->get_column_names_by_entity(Book::class,$doctrine);
 
         $flipColumnNames = array_flip($columnNames);
 
@@ -81,7 +87,7 @@ class BookController extends AbstractController
                 return $this->json('Validation false',403);
             }
 
-            $bus->dispatch(new BookStore($book));
+            $bus->dispatch(new BookStore($data,$author->getId()));
 
 //            $entityManager->persist($book);
 //            $entityManager->flush();

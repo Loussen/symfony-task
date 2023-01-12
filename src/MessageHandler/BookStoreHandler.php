@@ -2,38 +2,53 @@
 
 namespace App\MessageHandler;
 
+use App\Entity\Author;
+use App\Entity\Book;
 use App\Message\BookStore;
+use App\Repository\AuthorRepository;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\Messenger\Attribute\AsMessageHandler;
+use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Doctrine\Persistence\ManagerRegistry;
 
-class BookStoreHandler
+class BookStoreHandler implements MessageHandlerInterface
 {
-    private MessageBusInterface $bus;
-
-    public function __construct(MessageBusInterface $bus)
+    public function __construct(private readonly EntityManagerInterface $em, private readonly AuthorRepository $authorRepository)
     {
-        $this->bus = $bus;
     }
 
     /**
      * @throws Exception
      */
-    public function __invoke(BookStore $book, ManagerRegistry $doctrine): void
+    public function __invoke(BookStore $bookStore): void
     {
-        sleep(5);
+        $book = new Book();
 
-        $entityManager = $doctrine->getManager();
-        $entityManager->getConnection()->beginTransaction();
+        $findAuthor = $this->authorRepository->find($bookStore->getData()['author_id']);
 
-        try {
-            $entityManager->persist($book);
-            $entityManager->flush();
-            $entityManager->getConnection()->commit();
-        } catch (Exception $e) {
-            $entityManager->getConnection()->rollBack();
-            throw $e;
-        }
+        $book->setTitle($bookStore->getData()['title']);
+        $book->setAuthorId($findAuthor);
+        $book->setPages($bookStore->getData()['pages']);
+        $book->setReleaseDate(\DateTime::createFromFormat('d-m-Y H:i', $bookStore->getData()['release_date']));
+
+//        dump($book);
+//        sleep(5);
+
+
+//        $entityManager->getConnection()->beginTransaction();
+
+//        try {
+            $this->em->persist($book);
+            $this->em->flush();
+//            $entityManager->getConnection()->commit();
+//        }
+//        catch (Exception $e) {
+//            $entityManager->getConnection()->rollBack();
+//            throw $e;
+//        }
     }
 }
